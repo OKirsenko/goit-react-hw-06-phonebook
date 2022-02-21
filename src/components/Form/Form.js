@@ -1,14 +1,18 @@
-import { nanoid } from 'nanoid';
+// import { nanoid } from 'nanoid';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from '../../redux/contacts-actions';
 import { useState } from 'react';
 import s from './Form.module.css';
 
-export default function Form({ onSubmit }) {
+export default function Form() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
-  const handleChange = e => {
-    const { name, value } = e.currentTarget;
+  const dispatch = useDispatch();
+  const items = useSelector(state => state.contacts.items);
 
+  const handleChange = event => {
+    const { name, value } = event.target;
     switch (name) {
       case 'name':
         setName(value);
@@ -16,24 +20,32 @@ export default function Form({ onSubmit }) {
       case 'number':
         setNumber(value);
         break;
-
       default:
         return;
     }
   };
-  const handleSubmit = e => {
-    e.preventDefault();
-    const contact = {
-      name,
-      number,
-      id: nanoid(),
-    };
-    onSubmit(contact);
-    reset();
-  };
-  const reset = () => {
+  const clearFilds = () => {
     setName('');
     setNumber('');
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    const newContact = {
+      name,
+      number,
+    };
+
+    if (
+      items.find(contact =>
+        contact.name.toLowerCase().includes(newContact.name.toLowerCase())
+      )
+    ) {
+      clearFilds();
+      return alert(`${newContact.name} is already in contacts`);
+    }
+    dispatch(addContact(newContact));
+    clearFilds();
   };
 
   return (
